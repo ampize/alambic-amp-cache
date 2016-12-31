@@ -1,10 +1,8 @@
 <?php
 namespace AMPCache;
-use Alambic\Exception\ConnectorArgs;
 use Alambic\Exception\ConnectorConfig;
-use Alambic\Exception\ConnectorUsage;
-use GuzzleHttp\Ring\Client\CurlHandler;
-use Illuminate\Http\Request;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 class AMPCache
 {
     /**
@@ -22,23 +20,28 @@ class AMPCache
             throw new ConnectorConfig('Insufficient configuration : graphQL AMP api route required');
         }
         if (!isset($payload['response'])) {
-            $host = preg_replace('#^https?://#', '', rtrim(Request::root(),'/'));
-            $secure = Request::secure();
-            $uri = "https://cdn.ampproject.org/c";
-            if (Request::secure()) $uri. = "/s";
-            $uri.=$graphQLAmpApiRoute."?query=".$payload['pipelineParams']['currentRequestString'];
-            $handler = new CurlHandler();
-            $response = $handler([
-                'http_method' => 'GET',
-                'uri'         => $uri
-            ]);
-            $response->then(function (array $response) {
-                if ($response['status']=="200") {
-                    $payload['response'] = json_decode($response['body']);
-                };
-            });
+            $urlParts = parse_url($_SERVER["HTTP_HOST"]);
+            $host = utf8_encode($urlParts["host"]);
+            $host = str_replace("-","--",$host);
+            $host = str_replace(".","-",$host);
+            $secure = empty($_SERVER["HTTPS"]) ? false : true;
+            $baseUri = "https://cdn.ampproject.org";
+            if ($secure) {
+                $uri = "/c/s";
+            } else {
+                $uri = "/c";
+            }
+            $uri.="/".$host.$graphQLAmpApiRoute."?query=".$payload['pipelineParams']['currentRequestString'];
+            $client = new Client(['base_uri' => $baseUri]);
+            try {
+                $response = $client->request('GET', $uri);
+                if ($response->getStatusCode()=="200") {
+                    $payload['response'] = json_decode($response->getBody());
+                }
+            } catch (RequestException $e) {
+                return $payload;
+            }
 
-            $response->wait();
         }
         return $payload;
     }
