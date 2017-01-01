@@ -31,7 +31,7 @@ class AMPCache
             } else {
                 $uri = "/c";
             }
-            $uri.="/".$host.$graphQLAmpApiRoute."?query=".$payload['pipelineParams']['currentRequestString'];
+            $uri.="/".$host.$graphQLAmpApiRoute."?query=".$payload['pipelineParams']['parentRequestString'];
             $client = new Client(['base_uri' => $baseUri]);
             try {
                 $response = $client->request('GET', $uri);
