@@ -21,7 +21,7 @@ class AMPCache
         }
         if (!isset($payload['response'])) {
             $urlParts = parse_url($_SERVER["HTTP_HOST"]);
-            $host = utf8_encode($urlParts["host"]);
+            $host = utf8_encode(isset($urlParts["host"]) ? $urlParts["host"] : $urlParts["path"]);
             $host = str_replace("-","--",$host);
             $host = str_replace(".","-",$host);
             $secure = empty($_SERVER["HTTPS"]) ? false : true;
