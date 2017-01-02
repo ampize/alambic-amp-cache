@@ -31,12 +31,12 @@ class AMPCache
             $secure = empty($_SERVER["HTTPS"]) ? false : true;
             $baseUri = "https://cdn.ampproject.org";
             if ($secure) {
-                $uri = "/c/s";
+                $uri = $baseUri."/c/s/";
             } else {
-                $uri = "/c";
+                $uri = $baseUri."/c/";
             }
-            $uri.="/".$host.$graphQLAmpApiRoute."?query=".$payload['pipelineParams']['parentRequestString'];
-            $client = new Client(['base_uri' => $baseUri]);
+            $uri.=$host.$graphQLAmpApiRoute."?query=".$payload['pipelineParams']['parentRequestString'];
+            $client = new Client();
             try {
                 $response = $client->request('GET', $uri);
                 if ($response->getStatusCode()=="200") {
