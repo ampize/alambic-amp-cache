@@ -14,6 +14,10 @@ class AMPCache
      */
     public function __invoke($payload = [])
     {
+        // Bypass cache
+        if (isset($payload["pipelineParams"]["noCache"]) && $payload["pipelineParams"]["noCache"]) {
+            return $payload;
+        }
         // Get configuration
         $graphQLAmpApiRoute = isset($payload["connectorBaseConfig"]["graphQLAmpApiRoute"]) ? $payload["connectorBaseConfig"]["graphQLAmpApiRoute"] : null;
         if (!$graphQLAmpApiRoute){
@@ -22,8 +26,8 @@ class AMPCache
         if (!isset($payload['response'])) {
             $urlParts = parse_url($_SERVER["HTTP_HOST"]);
             $host = utf8_encode(isset($urlParts["host"]) ? $urlParts["host"] : $urlParts["path"]);
-            $host = str_replace("-","--",$host);
-            $host = str_replace(".","-",$host);
+            //$host = str_replace("-","--",$host);
+            //$host = str_replace(".","-",$host);
             $secure = empty($_SERVER["HTTPS"]) ? false : true;
             $baseUri = "https://cdn.ampproject.org";
             if ($secure) {
