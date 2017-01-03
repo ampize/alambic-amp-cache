@@ -1,8 +1,8 @@
 <?php
 namespace AMPCache;
 use Alambic\Exception\ConnectorConfig;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
+use Goutte\Client;
+
 class AMPCache
 {
     /**
@@ -38,10 +38,9 @@ class AMPCache
             $uri.=$host.$graphQLAmpApiRoute."?query=".$payload['pipelineParams']['parentRequestString'];
             $client = new Client();
             try {
-                $response = $client->request('GET', $uri);
-                if ($response->getStatusCode()=="200") {
-                    $payload['response'] = json_decode($response->getBody());
-                }
+                $crawler = $client->request('GET', $uri);
+                $response = json_decode($crawler->filterXPath('//*[@id='data']')->text(), true);
+                $payload['response'] = $response['articles'];
             } catch (RequestException $e) {
                 return $payload;
             }
